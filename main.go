@@ -33,7 +33,8 @@ func main() {
 	router.GET("/customers", getCustomers)
 	router.GET("/customers/:id", getCustomersById)
 	router.POST("/customers", createCustomer)
-	router.PATCH("/customers/:id", updateCustomer)
+	router.PUT("/customers/:id", updateCustomer)
+	router.DELETE("/customers/:id", removeCustomersById)
 
 	router.Run(serverAdd)
 }
@@ -73,6 +74,7 @@ func getCustomers(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, customers)
 }
 
+// Returns a single customer from the database
 func getCustomersById(c *gin.Context) {
 	rows, err := db.Query("SELECT id, firstName, lastName, createdAt, updatedAt, email, isActive FROM customers WHERE id = $1", c.Param("id"))
 	if err != nil {
@@ -98,14 +100,11 @@ func getCustomersById(c *gin.Context) {
 }
 
 type postRequest struct {
-	ID        string    `json:"id"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	Email     string    `json:"email"`
-	IsActive  bool      `json:"isActive"`
+	ID        string `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Password  string `json:"password"`
+	Email     string `json:"email"`
 }
 
 // Creates a new customer on database
@@ -133,30 +132,43 @@ func createCustomer(c *gin.Context) {
 	}
 	defer stmt.Close()
 
-	if _, err := stmt.Exec(awesomeCustomer.FirstName, awesomeCustomer.LastName, awesomeCustomer.CreatedAt, awesomeCustomer.UpdatedAt, hashedPassword, awesomeCustomer.Email, awesomeCustomer.IsActive); err != nil {
+	if _, err := stmt.Exec(awesomeCustomer.FirstName, awesomeCustomer.LastName, time.Now(), time.Now(), hashedPassword, awesomeCustomer.Email); err != nil {
 		log.Fatal(err)
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"Message": "Customer created successfully", "Customer Email": awesomeCustomer.Email})
+	c.JSON(http.StatusCreated, gin.H{"Message": "Customer created successfully"})
+}
+
+type putRequest struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
+	IsActive  bool   `json:"isActive"`
 }
 
 // Updates an existing customer on database
 func updateCustomer(c *gin.Context) {
-	var awesomeCustomer postRequest
+	var awesomeCustomer putRequest
 	if err := c.BindJSON(&awesomeCustomer); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
 
-	stmt, err := db.Prepare("UPDATE customers SET lastName=$1 WHERE id=$2;")
+	stmt, err := db.Exec(`UPDATE customers SET firstName=$1, lastName=$2, email=$3, updatedAt=$4, isactive=$5 WHERE id=$6`, &awesomeCustomer.FirstName, &awesomeCustomer.LastName, &awesomeCustomer.Email, time.Now(), &awesomeCustomer.IsActive, c.Param("id"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer stmt.Close()
+	defer stmt.RowsAffected()
 
-	if _, err := stmt.Exec(awesomeCustomer.LastName); err != nil {
+	c.JSON(http.StatusOK, gin.H{"Message": "Customer updated successfully"})
+}
+
+func removeCustomersById(c *gin.Context) {
+	stmt, err := db.Exec("DELETE FROM customers WHERE id = $1", c.Param("id"))
+	if err != nil {
 		log.Fatal(err)
 	}
+	defer stmt.RowsAffected()
 
-	c.JSON(http.StatusCreated, gin.H{"Message": "Customer updated successfully"})
+	c.JSON(http.StatusNoContent, nil)
 }
