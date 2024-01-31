@@ -51,7 +51,7 @@ type getResponse struct {
 
 // Returns a list of customers from the database
 func getCustomers(c *gin.Context) {
-	rows, err := db.Query("SELECT id, firstName, lastName, createdAt, updatedAt, email, isActive FROM customers WHERE isActive=true")
+	rows, err := db.Query("SELECT id, first_name, last_name, created_at, updated_at, email, is_active FROM customers WHERE is_active=true")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,7 +76,7 @@ func getCustomers(c *gin.Context) {
 
 // Returns a single customer from the database
 func getCustomersById(c *gin.Context) {
-	rows, err := db.Query("SELECT id, firstName, lastName, createdAt, updatedAt, email, isActive FROM customers WHERE id = $1 AND isActive=true", c.Param("id"))
+	rows, err := db.Query("SELECT id, first_name, last_name, created_at, updated_at, email, is_active FROM customers WHERE id = $1 AND is_active=true", c.Param("id"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -125,7 +125,7 @@ func createCustomer(c *gin.Context) {
 	}
 	hashedPassword := string(hashedPasswordBytes)
 
-	stmt, err := db.Exec("INSERT INTO customers (firstName, lastName, createdAt, updatedAt, password, email, isActive) VALUES ($1, $2, $3, $4, $5, $6, $7)", &awesomeCustomer.FirstName, &awesomeCustomer.LastName, time.Now(), time.Now(), hashedPassword, &awesomeCustomer.Email, true)
+	stmt, err := db.Exec("INSERT INTO customers (first_name, last_name, created_at, updated_at, password, email, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7)", &awesomeCustomer.FirstName, &awesomeCustomer.LastName, time.Now(), time.Now(), hashedPassword, &awesomeCustomer.Email, true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -149,7 +149,7 @@ func updateCustomer(c *gin.Context) {
 		return
 	}
 
-	stmt, err := db.Exec(`UPDATE customers SET firstName=$1, lastName=$2, email=$3, updatedAt=$4, isactive=$5 WHERE id=$6`, &awesomeCustomer.FirstName, &awesomeCustomer.LastName, &awesomeCustomer.Email, time.Now(), &awesomeCustomer.IsActive, c.Param("id"))
+	stmt, err := db.Exec(`UPDATE customers SET first_name=$1, last_name=$2, email=$3, updated_at=$4 WHERE id=$5`, &awesomeCustomer.FirstName, &awesomeCustomer.LastName, &awesomeCustomer.Email, time.Now(), c.Param("id"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -159,7 +159,7 @@ func updateCustomer(c *gin.Context) {
 }
 
 func removeCustomersById(c *gin.Context) {
-	stmt, err := db.Exec("UPDATE customers SET isActive=false WHERE ID=$1", c.Param("id"))
+	stmt, err := db.Exec("UPDATE customers SET is_active=false WHERE id=$1", c.Param("id"))
 	if err != nil {
 		log.Fatal(err)
 	}

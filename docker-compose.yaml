@@ -1,0 +1,27 @@
+services:
+###### Postgres DB ######
+  pg_db:
+    image: postgres
+    container_name: postgres-go-db
+    volumes:
+      - ./postgres:/var/lib/postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    networks:
+      - app-network
+
+###### CloudBeaver Client SQL #######
+  dbeaver:
+    image: dbeaver/cloudbeaver
+    container_name: cloudbeaver-golang    
+    ports:
+      - 8991:8978
+    volumes:
+      - ./dbeaver:/opt/cloudbeaver/workspace
+    networks:
+      - app-network
+        
+networks:
+  app-network:
+    driver: bridge
