@@ -8,6 +8,8 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - 5432:5432  
     networks:
       - app-network
 
