@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/it0dan/golang-studies/internal/models"
-	"github.com/it0dan/golang-studies/pkg/db/postgres"
+	postgres "github.com/it0dan/golang-studies/pkg/db/pgsql"
 )
 
 // Returns a list of customers from the database

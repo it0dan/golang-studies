@@ -9,7 +9,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/it0dan/golang-studies/internal/server"
-	"github.com/it0dan/golang-studies/pkg/db/postgres"
+	postgres "github.com/it0dan/golang-studies/pkg/db/pgsql"
 )
 
 func main() {
